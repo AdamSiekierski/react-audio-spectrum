@@ -15,7 +15,7 @@ const App = () => {
       spectrum.width = spectrum.clientWidth;
     };
     resizeCanvas();
-    document.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', resizeCanvas);
 
     const analyser = audioContext.current.createAnalyser();
     const audioSource = audioContext.current.createMediaElementSource(audio);
@@ -30,13 +30,18 @@ const App = () => {
       analyser.getByteFrequencyData(freqData);
 
       spectrumContext.clearRect(0, 0, spectrum.width, spectrum.height);
-      spectrumContext.fillStyle = spectrumContext.createLinearGradient(0, 200, 0, 0);
-      spectrumContext.fillStyle.addColorStop(0, '#FF4E50');
-      spectrumContext.fillStyle.addColorStop(1, '#F9D423');
+      spectrumContext.fillStyle = spectrumContext.createLinearGradient(0, 100, 0, 0);
+      spectrumContext.fillStyle.addColorStop(0, '#ff5370');
+      spectrumContext.fillStyle.addColorStop(1, '#ff97b4');
 
       const barWidth = 20;
       const barMargin = 10;
-      const bars = Math.floor(spectrum.width / (barWidth + barMargin));
+
+      // calculate the number of bars
+      let bars = Math.floor(spectrum.width / (barWidth + barMargin));
+      if (spectrum.width % (barWidth + barMargin) >= barWidth) {
+        bars += 1;
+      }
 
       for (let i = 0; i < bars; i++) {
         spectrumContext.fillRect(
@@ -51,7 +56,7 @@ const App = () => {
     };
 
     renderFrame();
-  });
+  }, [audioRef, spectrumRef]);
 
   return (
     <>
