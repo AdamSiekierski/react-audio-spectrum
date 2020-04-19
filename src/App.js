@@ -1,26 +1,67 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useRef, useEffect } from 'react';
+import music from './Chelsea Loft Long.mp3';
 
-function App() {
+const App = () => {
+  const audioRef = useRef();
+  const spectrumRef = useRef();
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    const spectrum = spectrumRef.current;
+
+    // Responsive canvas
+    const resizeCanvas = () => {
+      spectrum.width = spectrum.clientWidth;
+    };
+    resizeCanvas();
+    document.addEventListener('resize', resizeCanvas);
+
+    const audioContext = new AudioContext();
+    const analyser = audioContext.createAnalyser();
+    const audioSource = audioContext.createMediaElementSource(audio);
+
+    audioSource.connect(analyser);
+    audioSource.connect(audioContext.destination);
+    analyser.connect(audioContext.destination);
+
+    const spectrumContext = spectrum.getContext('2d');
+
+    const renderFrame = () => {
+      const freqData = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(freqData);
+
+      spectrumContext.clearRect(0, 0, spectrum.width, spectrum.height);
+      spectrumContext.fillStyle = spectrumContext.createLinearGradient(0, 200, 0, 0);
+      spectrumContext.fillStyle.addColorStop(0, '#FF4E50');
+      spectrumContext.fillStyle.addColorStop(1, '#F9D423');
+
+      const barWidth = 20;
+      const barMargin = 10;
+      const bars = Math.floor(spectrum.width / (barWidth + barMargin));
+
+      for (let i = 0; i < bars; i++) {
+        spectrumContext.fillRect(
+          i * (barWidth + barMargin),
+          spectrum.height,
+          barWidth,
+          -(freqData[i] / 2),
+        );
+      }
+
+      requestAnimationFrame(renderFrame);
+    };
+
+    renderFrame();
+  }, [audioRef, spectrumRef]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <div>
+        <audio ref={audioRef} controls={true} src={music} />
+      </div>
+      <canvas ref={spectrumRef} style={{ width: '100%' }}></canvas>
+    </>
   );
-}
+};
 
 export default App;
