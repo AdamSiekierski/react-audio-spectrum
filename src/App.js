@@ -4,6 +4,7 @@ import music from './Chelsea Loft Long.mp3';
 const App = () => {
   const audioRef = useRef();
   const spectrumRef = useRef();
+  const audioContext = useRef(new AudioContext());
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -16,13 +17,11 @@ const App = () => {
     resizeCanvas();
     document.addEventListener('resize', resizeCanvas);
 
-    const audioContext = new AudioContext();
-    const analyser = audioContext.createAnalyser();
-    const audioSource = audioContext.createMediaElementSource(audio);
+    const analyser = audioContext.current.createAnalyser();
+    const audioSource = audioContext.current.createMediaElementSource(audio);
 
     audioSource.connect(analyser);
-    audioSource.connect(audioContext.destination);
-    analyser.connect(audioContext.destination);
+    audioSource.connect(audioContext.current.destination);
 
     const spectrumContext = spectrum.getContext('2d');
 
@@ -52,12 +51,19 @@ const App = () => {
     };
 
     renderFrame();
-  }, [audioRef, spectrumRef]);
+  });
 
   return (
     <>
       <div>
-        <audio ref={audioRef} controls={true} src={music} />
+        <audio
+          ref={audioRef}
+          src={music}
+          autoPlay={false}
+          loop={true}
+          controls={true}
+          onPlay={() => audioContext.current.resume()}
+        />
       </div>
       <canvas ref={spectrumRef} style={{ width: '100%' }}></canvas>
     </>
