@@ -13,6 +13,7 @@ const App = () => {
     // Responsive canvas
     const resizeCanvas = () => {
       spectrum.width = spectrum.clientWidth;
+      spectrum.height = spectrum.clientHeight;
     };
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
@@ -30,7 +31,7 @@ const App = () => {
       analyser.getByteFrequencyData(freqData);
 
       spectrumContext.clearRect(0, 0, spectrum.width, spectrum.height);
-      spectrumContext.fillStyle = spectrumContext.createLinearGradient(0, 800, 0, 0);
+      spectrumContext.fillStyle = spectrumContext.createLinearGradient(0, spectrum.height, 0, 0);
       spectrumContext.fillStyle.addColorStop(0, '#ff5370');
       spectrumContext.fillStyle.addColorStop(1, '#ff97b4');
 
@@ -43,12 +44,14 @@ const App = () => {
         bars += 1;
       }
 
+      const heightMultiplier = spectrum.height / 235;
+
       for (let i = 0; i < bars; i++) {
         spectrumContext.fillRect(
           i * (barWidth + barMargin),
           spectrum.height,
           barWidth,
-          -(freqData[i] * 1.8),
+          -(freqData[i] * heightMultiplier),
         );
       }
 
@@ -68,12 +71,23 @@ const App = () => {
           loop={true}
           controls={true}
           onPlay={() => audioContext.current.resume()}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            zIndex: 1,
+          }}
         />
       </div>
       <canvas
         ref={spectrumRef}
-        style={{ width: '100%', height: 800, position: 'absolute', bottom: 0 }}
-        height="800"></canvas>
+        style={{
+          width: '100%',
+          height: 'calc(100vh - 100px)',
+          position: 'absolute',
+          bottom: 0,
+          zIndex: 0,
+        }}></canvas>
     </>
   );
 };
