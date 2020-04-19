@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import music from './Chelsea Loft Long.mp3';
+import music from './music.mp3';
 
 const App = () => {
   const audioRef = useRef();
@@ -30,7 +30,7 @@ const App = () => {
       analyser.getByteFrequencyData(freqData);
 
       spectrumContext.clearRect(0, 0, spectrum.width, spectrum.height);
-      spectrumContext.fillStyle = spectrumContext.createLinearGradient(0, 100, 0, 0);
+      spectrumContext.fillStyle = spectrumContext.createLinearGradient(0, 800, 0, 0);
       spectrumContext.fillStyle.addColorStop(0, '#ff5370');
       spectrumContext.fillStyle.addColorStop(1, '#ff97b4');
 
@@ -48,7 +48,7 @@ const App = () => {
           i * (barWidth + barMargin),
           spectrum.height,
           barWidth,
-          -(freqData[i] / 2),
+          -(freqData[i] * 1.8),
         );
       }
 
@@ -70,7 +70,10 @@ const App = () => {
           onPlay={() => audioContext.current.resume()}
         />
       </div>
-      <canvas ref={spectrumRef} style={{ width: '100%' }}></canvas>
+      <canvas
+        ref={spectrumRef}
+        style={{ width: '100%', height: 800, position: 'absolute', bottom: 0 }}
+        height="800"></canvas>
     </>
   );
 };
