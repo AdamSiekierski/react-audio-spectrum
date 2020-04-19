@@ -4,11 +4,14 @@ import music from './music.mp3';
 const App = () => {
   const audioRef = useRef();
   const spectrumRef = useRef();
-  const audioContext = useRef(new AudioContext());
+  const audioContextRef = useRef(new (window.AudioContext || window.webkitAudioContext)());
 
   useEffect(() => {
     const audio = audioRef.current;
     const spectrum = spectrumRef.current;
+    const audioContext = audioContextRef.current;
+
+    audio.addEventListener('play', () => audioContext.resume());
 
     // Responsive canvas
     const resizeCanvas = () => {
@@ -18,15 +21,17 @@ const App = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    const analyser = audioContext.current.createAnalyser();
-    const audioSource = audioContext.current.createMediaElementSource(audio);
+    const analyser = audioContext.createAnalyser();
+    const audioSource = audioContext.createMediaElementSource(audio);
 
     audioSource.connect(analyser);
-    audioSource.connect(audioContext.current.destination);
+    analyser.connect(audioContext.destination);
 
     const spectrumContext = spectrum.getContext('2d');
 
     const renderFrame = () => {
+      requestAnimationFrame(renderFrame);
+
       const freqData = new Uint8Array(analyser.frequencyBinCount);
       analyser.getByteFrequencyData(freqData);
 
@@ -54,8 +59,6 @@ const App = () => {
           -(freqData[i] * heightMultiplier),
         );
       }
-
-      requestAnimationFrame(renderFrame);
     };
 
     renderFrame();
@@ -64,20 +67,15 @@ const App = () => {
   return (
     <>
       <div>
-        <audio
-          ref={audioRef}
-          src={music}
-          autoPlay={false}
-          loop={true}
-          controls={true}
-          onPlay={() => audioContext.current.resume()}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            zIndex: 1,
+        <audio ref={audioRef} src={music} autoPlay={false} loop={true} />
+        <button
+          onClick={() => {
+            audioContextRef.current.resume();
+            audioRef.current.play();
           }}
-        />
+          style={{ zIndex: 1 }}>
+          play da beat
+        </button>
       </div>
       <canvas
         ref={spectrumRef}
